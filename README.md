@@ -1,37 +1,113 @@
-# Career Tracker Template
+<h1 align="center">Career Tracker</h1>
 
-Plantilla open source para gestionar, registrar y analizar una búsqueda laboral utilizando **Google Sheets** y **Google Apps Script**.
+<p align="center">
+  <em>Open-source Google Sheets template for managing and analyzing your job search.</em>
+</p>
 
-El proyecto permite centralizar empresas, postulaciones, estados, historial de eventos y métricas de búsqueda laboral en una única herramienta.
-
-Está diseñado para ser utilizado como plantilla, adaptado a diferentes procesos de búsqueda laboral y modificado libremente según las necesidades de cada usuario.
-
-## Características
-
-* Generación automática de IDs para empresas, postulaciones e historial.
-* Registro centralizado de empresas.
-* Registro y seguimiento de postulaciones.
-* Asociación automática entre empresas, estados y sus respectivos IDs.
-* Historial automático de cambios de estado.
-* Registro de eventos asociados a cada estado.
-* Actualización del historial cuando cambia la empresa o el cargo de una candidatura.
-* Indicadores de búsqueda laboral.
-* Cálculo de conversiones entre etapas.
-* Análisis por período.
-* Arquitectura modular mediante archivos `.gs`.
-* Uso de servicios nativos de Google Apps Script.
-* Sin dependencia de Google Sheets API.
+<p align="center">
+  <img src="https://img.shields.io/badge/Google%20Sheets-Apps%20Script-4285F4?style=flat-square" alt="Google Sheets Apps Script">
+  <img src="https://img.shields.io/badge/status-functional-green?style=flat-square" alt="Functional">
+  <img src="https://img.shields.io/badge/API-Google%20Sheets%20API%20not%20required-blue?style=flat-square" alt="Google Sheets API not required">
+  <img src="https://img.shields.io/badge/license-MIT-green?style=flat-square" alt="MIT license">
+</p>
 
 ---
 
-## Estructura del proyecto
+**Career Tracker** is an open-source job-search management template built with **Google Sheets and Google Apps Script**.
+
+It helps you keep track of companies, job applications, application stages, historical events and search metrics in one place.
+
+The project was originally created as a personal tool for managing a job search and was later structured as a reusable template that can be shared, copied and modified freely.
+
+## Table of Contents
+
+* [Features](#features)
+* [How it works](#how-it-works)
+* [Project structure](#project-structure)
+* [Google Sheets structure](#google-sheets-structure)
+* [Automation](#automation)
+* [Metrics](#metrics)
+* [Installation](#installation)
+* [Usage](#usage)
+* [Customization](#customization)
+* [Design principles](#design-principles)
+* [Privacy](#privacy)
+* [Contributing](#contributing)
+* [License](#license)
+* [Author](#author)
+
+## Features
+
+* Automatic IDs for companies, applications and history records.
+* Company database.
+* Job application tracking.
+* Automatic company ID lookup.
+* Automatic application status ID lookup.
+* Application status and event tracking.
+* Automatic application history.
+* Historical tracking of status changes.
+* Historical synchronization when a company's name or position changes.
+* Search-period filtering.
+* Job-search indicators.
+* Conversion metrics between application stages.
+* Separate interview metrics.
+* Active application tracking.
+* No external database required.
+* No Google Sheets API required.
+* Fully customizable Google Sheets structure.
+
+## How it works
+
+The spreadsheet is organized around four main concepts:
 
 ```text
-career-tracker-template/
+Companies
+    │
+    ▼
+Applications
+    │
+    ├── Current status
+    │
+    └── Historical events
+              │
+              ▼
+           Metrics
+```
+
+A typical workflow looks like this:
+
+```text
+Create company
+      │
+      ▼
+EMP-XXXX
+      │
+      ▼
+Create application
+      │
+      ├── JOB-XXXX
+      ├── Company ID
+      └── Status ID
+      │
+      ▼
+Change application status
+      │
+      ▼
+Create historical event
+      │
+      ▼
+Update search metrics
+```
+
+The automation is handled by Google Apps Script and is divided into small modules with a single responsibility.
+
+## Project structure
+
+```text
+career-tracker/
 │
 ├── README.md
 ├── LICENSE
-├── .gitignore
 │
 └── src/
     ├── Router.gs
@@ -41,33 +117,21 @@ career-tracker-template/
     └── Metricas.gs
 ```
 
----
+### `Router.gs`
 
-## Módulos
+Central entry point for spreadsheet edits.
 
-### Router.gs
+It contains the project's single `onEdit(e)` function and routes changes to the appropriate module.
 
-Es el punto central de entrada para las ediciones realizadas en Google Sheets.
+```text
+Postulaciones → Postulaciones.gs + Historial.gs
+Empresas      → Empresas.gs
+Metricas      → Metricas.gs
+```
 
-Utiliza un único `onEdit(e)` y distribuye los eventos al módulo correspondiente.
+### `Empresas.gs`
 
-Actualmente gestiona:
-
-* `Postulaciones`
-* `Empresas`
-* `Metricas`
-
-Esto evita tener múltiples funciones `onEdit()` independientes dentro del proyecto.
-
----
-
-### Empresas.gs
-
-Gestiona automáticamente la tabla `Empresas`.
-
-Cuando se agrega una empresa nueva, genera automáticamente un identificador único.
-
-Formato:
+Handles company records and generates unique company IDs.
 
 ```text
 EMP-0001
@@ -75,34 +139,19 @@ EMP-0002
 EMP-0003
 ```
 
-También comprueba si ya existe una empresa con el mismo nombre antes de generar un nuevo ID.
+It also prevents creating duplicate companies based on their normalized name.
 
-Estructura:
+### `Postulaciones.gs`
 
-| Columna | Campo     |
-| ------- | --------- |
-| A       | ID        |
-| B       | Name      |
-| C       | Tipo      |
-| D       | Industria |
-| E       | Pais      |
-| F       | Rol       |
-| G       | Fuente    |
-| H       | Notas     |
+Handles job applications.
 
----
+When a new application is created, the script:
 
-### Postulaciones.gs
+1. Generates a unique application ID.
+2. Inserts the formula used to obtain the company ID.
+3. Inserts the formula used to obtain the status ID.
 
-Gestiona automáticamente la tabla `Postulaciones`.
-
-Cuando se crea una nueva candidatura:
-
-1. Genera un ID único.
-2. Inserta la fórmula para obtener el ID de la empresa.
-3. Inserta la fórmula para obtener el ID del estado.
-
-Formato del ID:
+Application IDs use the following format:
 
 ```text
 JOB-0001
@@ -110,43 +159,11 @@ JOB-0002
 JOB-0003
 ```
 
-Las asociaciones utilizan las tablas de Google Sheets mediante fórmulas `XLOOKUP`.
+### `Historial.gs`
 
-#### ID Empresa
+Records application status changes as historical events.
 
-```text
-Empresa → Empresas[Name] → Empresas[ID]
-```
-
-#### ID Estado
-
-```text
-Estado → Estado_Postulacion[Name] → Estado_Postulacion[ID]
-```
-
-Estructura:
-
-| Columna | Campo                 |
-| ------- | --------------------- |
-| A       | ID                    |
-| B       | Fecha                 |
-| C       | ID Empresa            |
-| D       | Empresa               |
-| E       | Cargo                 |
-| F       | Link                  |
-| G       | ID Estado             |
-| H       | Estado                |
-| I       | Fecha último contacto |
-| J       | Próximo paso          |
-| K       | Notas                 |
-
----
-
-### Historial.gs
-
-Registra automáticamente los eventos relevantes de cada candidatura.
-
-Cada registro recibe un identificador único:
+Historical records receive IDs such as:
 
 ```text
 HIS-0001
@@ -154,23 +171,82 @@ HIS-0002
 HIS-0003
 ```
 
-El historial conserva información de la candidatura y registra los cambios de estado.
+The event description is associated with the selected application status.
 
-Estructura:
+For example:
 
-| Columna | Campo          |
-| ------- | -------------- |
-| A       | ID             |
-| B       | ID Candidatura |
-| C       | Fecha          |
-| D       | ID Empresa     |
-| E       | Cargo          |
-| F       | ID Estado      |
-| G       | Evento         |
+```text
+Enviado, esperando respuesta
+            ↓
+Postulación enviada
+```
 
-El evento se obtiene desde la tabla `Estado_Postulacion`.
+The first historical event uses the application date defined by the user. Subsequent events use the date on which the event is registered.
 
-### Estados disponibles
+If the company or position of an application changes, the corresponding historical records are updated.
+
+### `Metricas.gs`
+
+Calculates job-search indicators and conversion rates using information from `Historial` and `Postulaciones`.
+
+The analysis can be filtered by a selected date range.
+
+## Google Sheets structure
+
+The template uses the following sheets:
+
+| Sheet                | Purpose                         |
+| -------------------- | ------------------------------- |
+| `Empresas`           | Company database                |
+| `Postulaciones`      | Current job applications        |
+| `Estado_Postulacion` | Application statuses and events |
+| `Historial`          | Historical application events   |
+| `Metricas`           | Search metrics and conversions  |
+
+### Empresas
+
+| Column | Field     |
+| ------ | --------- |
+| A      | ID        |
+| B      | Name      |
+| C      | Tipo      |
+| D      | Industria |
+| E      | Pais      |
+| F      | Rol       |
+| G      | Fuente    |
+| H      | Notas     |
+
+### Postulaciones
+
+| Column | Field                 |
+| ------ | --------------------- |
+| A      | ID                    |
+| B      | Fecha                 |
+| C      | ID Empresa            |
+| D      | Empresa               |
+| E      | Cargo                 |
+| F      | Link                  |
+| G      | ID Estado             |
+| H      | Estado                |
+| I      | Fecha último contacto |
+| J      | Próximo paso          |
+| K      | Notas                 |
+
+### Historial
+
+| Column | Field          |
+| ------ | -------------- |
+| A      | ID             |
+| B      | ID Candidatura |
+| C      | Fecha          |
+| D      | ID Empresa     |
+| E      | Cargo          |
+| F      | ID Estado      |
+| G      | Evento         |
+
+### Estado_Postulacion
+
+The default status catalogue is:
 
 | ID       | Name                               | Evento                           |
 | -------- | ---------------------------------- | -------------------------------- |
@@ -187,99 +263,127 @@ El evento se obtiene desde la tabla `Estado_Postulacion`.
 | EPO-0011 | Rechazado                          | Candidatura rechazada            |
 | EPO-0012 | Retirado                           | Candidatura retirada             |
 
-Cuando se registra el primer evento de una candidatura, el historial utiliza la fecha definida en `Postulaciones` como fecha inicial del proceso.
+## Automation
 
-Los eventos posteriores utilizan la fecha en que se registra el cambio.
+### Application IDs
 
-Si cambia la empresa o el cargo de una candidatura, la información correspondiente se actualiza en los registros existentes de su historial.
+New applications automatically receive a sequential ID:
 
----
+```text
+JOB-0001
+JOB-0002
+JOB-0003
+```
 
-### Metricas.gs
+The script checks existing IDs and generates the next available number.
 
-Calcula indicadores y conversiones de la búsqueda laboral utilizando los datos de `Historial` y `Postulaciones`.
+### Company IDs
 
-#### Indicadores
+New companies receive:
 
-* Postulaciones enviadas.
-* Contactos recibidos.
-* Entrevistas realizadas.
-* Entrevistas técnicas.
-* Entrevistas psicológicas.
-* Ofertas.
-* Rechazos.
-* Retirados.
-* Candidaturas activas.
+```text
+EMP-0001
+EMP-0002
+EMP-0003
+```
 
-Las entrevistas se mantienen separadas para permitir un análisis más preciso de cada etapa.
+Duplicate company names are detected before creating a new ID.
 
-#### Candidaturas activas
+### Status and company relationships
 
-Una candidatura se considera activa mientras su estado actual no sea:
+The application table uses formulas to associate human-readable values with their internal IDs.
 
-* Oferta.
-* Rechazado.
-* Retirado.
+Company:
 
-#### Conversiones
+```text
+Empresa → Empresas[Name] → Empresas[ID]
+```
 
-Actualmente se calculan conversiones entre:
+Status:
+
+```text
+Estado → Estado_Postulacion[Name] → Estado_Postulacion[ID]
+```
+
+This keeps the spreadsheet readable for the user while allowing the scripts and metrics to work with stable IDs.
+
+### Application history
+
+Changing an application's status creates a new historical event.
+
+For example:
+
+```text
+JOB-0002
+
+Enviado, esperando respuesta
+        ↓
+Postulación enviada
+
+Primer contacto
+        ↓
+Primer contacto recibido
+
+Entrevista (realizada)
+        ↓
+Entrevista realizada
+```
+
+The historical record preserves the state reached by the application during its lifecycle.
+
+## Metrics
+
+The `Metricas` sheet provides two main analytical areas.
+
+### Indicators
+
+The current indicators are:
+
+* Postulaciones enviadas
+* Contactos recibidos
+* Entrevistas realizadas
+* Entrevistas técnicas
+* Entrevistas psicológicas
+* Ofertas
+* Rechazos
+* Retirados
+* Candidaturas activas
+
+Interviews are intentionally separated into different categories instead of being represented only as a single total.
+
+### Active applications
+
+An application is considered active when its current status is not:
+
+```text
+Oferta
+Rechazado
+Retirado
+```
+
+### Conversion rates
+
+The template calculates conversion between stages:
 
 ```text
 Postulaciones enviadas
-        ↓
+          ↓
 Primer contacto
-        ↓
+          ↓
 Entrevista
-        ↓
+          ↓
 Entrevista técnica
-        ↓
+          ↓
 Entrevista psicológica
-        ↓
+          ↓
 Oferta
 ```
 
-También se calculan conversiones de rechazo respecto de las postulaciones enviadas.
+It also tracks rejection conversion relative to applications sent.
 
----
+### Metrics tables
 
-## Estructura de Google Sheets
-
-La plantilla utiliza las siguientes hojas:
-
-```text
-Empresas
-Postulaciones
-Estado_Postulacion
-Historial
-Metricas
-```
-
-### Empresas
-
-Catálogo de empresas utilizadas durante la búsqueda laboral.
-
-### Postulaciones
-
-Registro actual de cada candidatura.
-
-### Estado_Postulacion
-
-Catálogo de estados y eventos asociados.
-
-### Historial
-
-Registro histórico de los cambios de estado de las candidaturas.
-
-### Metricas
-
-Panel de análisis compuesto por período, indicadores y conversiones.
-
----
-
-## Tablas de métricas
-
-La estructura actual utiliza los siguientes rangos de datos:
+The current data ranges are:
 
 ```text
 Periodo       → A2:B3
@@ -287,27 +391,25 @@ Indicadores   → D2:F10
 Conversiones  → H2:J7
 ```
 
-Estos rangos corresponden únicamente al área de datos de las tablas y no incluyen sus encabezados.
+These ranges refer to the data area of the tables and do not include their headers.
 
-La lógica de `Metricas.gs` identifica las tablas por nombre, por lo que la ubicación física de las tablas puede cambiar siempre que se mantengan correctamente definidas.
+The script identifies the tables by their table names rather than depending on fixed sheet coordinates.
 
----
+## Installation
 
-## Instalación
+### 1. Create a copy of the spreadsheet template
 
-### 1. Crear una copia de la plantilla
+Make your own copy of the Career Tracker Google Sheets template.
 
-Crea una copia del documento de Google Sheets que contenga las hojas y tablas necesarias.
+### 2. Open Apps Script
 
-### 2. Abrir Apps Script
+In Google Sheets:
 
-En Google Sheets:
+**Extensions → Apps Script**
 
-**Extensiones → Apps Script**
+### 3. Add the scripts
 
-### 3. Copiar los scripts
-
-Copia los archivos del directorio `src/`:
+Copy the files from `src/` into the Apps Script project:
 
 ```text
 Router.gs
@@ -317,9 +419,9 @@ Historial.gs
 Metricas.gs
 ```
 
-### 4. Verificar las hojas
+### 4. Verify sheet names
 
-La plantilla debe conservar los nombres:
+The following sheets must exist:
 
 ```text
 Empresas
@@ -329,9 +431,9 @@ Historial
 Metricas
 ```
 
-### 5. Verificar las tablas
+### 5. Verify table names
 
-Las tablas utilizadas por la automatización deben conservar sus nombres:
+The following Google Sheets tables are used by the metrics module:
 
 ```text
 Periodo
@@ -339,253 +441,210 @@ Indicadores
 Conversiones
 ```
 
-### 6. Guardar
+### 6. Save the project
 
-Guarda el proyecto de Apps Script.
+Save the Apps Script project.
 
-No es necesario configurar la Google Sheets API.
+No Google Sheets API configuration is required.
 
----
+## Usage
 
-## Uso básico
+### Add a company
 
-### Crear una empresa
+Enter a company into the `Empresas` table.
 
-Agrega una empresa en la tabla `Empresas`.
-
-El sistema generará automáticamente un ID:
+The system generates the company ID automatically.
 
 ```text
 EMP-XXXX
 ```
 
-### Crear una postulación
+### Add an application
 
-Agrega una nueva candidatura en `Postulaciones`.
+Enter the application information in `Postulaciones`.
 
-El sistema generará:
+The system generates:
 
 ```text
 JOB-XXXX
 ```
 
-Además, incorporará automáticamente las fórmulas para relacionar:
+It also creates the formulas used to resolve:
 
 ```text
-Empresa → ID Empresa
-Estado  → ID Estado
+Company → Company ID
+Status  → Status ID
 ```
 
-### Cambiar el estado
+### Update an application status
 
-Selecciona un nuevo estado en la candidatura.
+Change the `Estado` field of an application.
 
-El sistema registrará automáticamente el evento correspondiente en `Historial`.
+The system creates a corresponding event in `Historial`.
 
-Por ejemplo:
+### Update company or position
+
+If the company or position changes, the existing historical records associated with that application are updated to reflect the current company and position.
+
+### Analyze the search
+
+Set the desired date range in `Metricas`.
+
+The indicators and conversion values are then recalculated for that period.
+
+## Customization
+
+The template is intentionally designed to be modified.
+
+You can customize:
+
+* Company fields.
+* Application fields.
+* Application statuses.
+* Historical events.
+* Metrics.
+* Conversion formulas.
+* Dashboard layout.
+* Visual design.
+* ID prefixes.
+* Automation rules.
+
+If you change sheet or table names, update the corresponding configuration constants in the `.gs` files.
+
+For example:
 
 ```text
-Enviado, esperando respuesta
-            ↓
-Postulación enviada
+CONFIG_POSTULACIONES
+CONFIG_HISTORIAL
+CONFIG_METRICAS
+CONFIG_EMPRESAS
 ```
 
-Luego:
+## Design principles
+
+### Modular automation
+
+Each script has a specific responsibility.
 
 ```text
-Primer contacto
-            ↓
-Primer contacto recibido
-```
+Router.gs
+    ↓
+Routes events
 
-Y posteriormente:
+Empresas.gs
+    ↓
+Company management
 
-```text
-Entrevista (realizada)
-            ↓
-Entrevista realizada
-```
-
-### Consultar métricas
-
-Define el período de análisis en `Metricas`.
-
-El sistema actualizará los indicadores y conversiones correspondientes.
-
----
-
-## Arquitectura
-
-El proyecto utiliza una arquitectura modular sencilla:
-
-```text
-                         Google Sheets
-                              │
-                              ▼
-                           Router
-                              │
-              ┌───────────────┼───────────────┐
-              │               │               │
-              ▼               ▼               ▼
-          Empresas      Postulaciones      Metricas
-                              │
-                              ▼
-                          Historial
-                              │
-                              ▼
-                    Estado_Postulacion
-```
-
-Cada archivo tiene una responsabilidad específica.
-
-### Flujo de una postulación
-
-```text
-Nueva postulación
-       │
-       ▼
 Postulaciones.gs
-       │
-       ├── Genera JOB-XXXX
-       │
-       ├── Busca ID Empresa
-       │
-       └── Busca ID Estado
-       │
-       ▼
+    ↓
+Application management
+
 Historial.gs
-       │
-       └── Registra evento
-       │
-       ▼
+    ↓
+Historical events
+
 Metricas.gs
-       │
-       └── Calcula indicadores
+    ↓
+Analytics
 ```
 
----
+### Spreadsheet-first
 
-## Dependencias
+The project uses Google Sheets as both the interface and data store.
 
-El proyecto requiere únicamente:
+There is no separate database or backend server.
 
-* Google Sheets.
-* Google Apps Script.
-* Servicios nativos disponibles en Apps Script.
+### Stable IDs
 
-No utiliza:
+Entities use predictable IDs:
 
-* Google Sheets API.
-* APIs externas.
-* Bases de datos externas.
-* Servidores adicionales.
-* Claves API.
+```text
+EMP-XXXX → Company
+JOB-XXXX → Application
+HIS-XXXX → History
+EPO-XXXX → Application status
+```
 
----
+This makes relationships easier to maintain and provides stable references for automation and analysis.
 
-## Personalización
+### Native Google Apps Script
 
-El proyecto está diseñado para ser modificado.
+The project intentionally avoids the Google Sheets API.
 
-Puedes adaptar:
+It relies on native Apps Script services such as:
 
-* Estados de postulación.
-* Eventos.
-* Indicadores.
-* Conversiones.
-* Campos de las tablas.
-* Prefijos de IDs.
-* Reglas de automatización.
-* Diseño visual.
-* Dashboard.
-* Estructura de métricas.
+* `SpreadsheetApp`
+* `LockService`
 
-Si modificas la estructura de las hojas o los nombres de las tablas, revisa las constantes `CONFIG_*` de los módulos correspondientes.
+This keeps the installation simpler and avoids requiring an external API project or additional credentials.
 
----
+## Privacy
 
-## Buenas prácticas
+The repository contains only the template's source code.
 
-Para mantener la plantilla funcionando correctamente:
+**Do not commit personal job-search data.**
 
-* No modificar manualmente los IDs generados automáticamente.
-* No eliminar las fórmulas automáticas de las columnas de ID mientras sean necesarias.
-* Mantener consistentes los nombres de los estados.
-* Mantener la relación entre `Estado_Postulacion[ID]`, `Estado_Postulacion[Name]` y `Estado_Postulacion[Evento]`.
-* Evitar cambiar los nombres de las tablas utilizadas por `Metricas.gs`.
-* Mantener los scripts separados por responsabilidad.
-* Realizar una copia de seguridad antes de modificar la estructura.
+Never upload:
 
----
+* Personal information.
+* Contact information.
+* Private application links.
+* Recruiter information.
+* Private notes.
+* Credentials.
+* API keys.
+* Access tokens.
+* Real application history.
 
-## Datos y privacidad
+Each user should work with their own copy of the Google Sheets template.
 
-El repositorio contiene únicamente el código fuente de la plantilla.
+## Contributing
 
-No deben subirse al repositorio:
+Contributions are welcome.
 
-* Datos personales.
-* Empresas registradas durante una búsqueda laboral real.
-* Historial de postulaciones.
-* Información de contacto.
-* Links privados.
-* Credenciales.
-* Tokens.
-* Claves API.
-* Información sensible.
+You can contribute by:
 
-Cada usuario debe trabajar con su propia copia de Google Sheets.
+* Reporting bugs.
+* Suggesting improvements.
+* Improving documentation.
+* Adding new metrics.
+* Improving the automation.
+* Adding new application stages.
+* Improving the dashboard.
+* Submitting pull requests.
 
----
+For significant changes, open an issue first to discuss the proposed approach.
 
-## Contribuciones
+## Project status
 
-Las contribuciones son bienvenidas.
+**Status: Functional**
 
-Puedes:
+The current version includes:
 
-* Reportar errores.
-* Proponer mejoras.
-* Crear nuevas funcionalidades.
-* Mejorar la documentación.
-* Adaptar la plantilla a otros flujos de búsqueda laboral.
-* Enviar pull requests.
+* Company management.
+* Application management.
+* Automatic IDs.
+* Company and status ID lookup.
+* Application history.
+* Status/event relationships.
+* Search indicators.
+* Conversion metrics.
+* Period filtering.
 
-Antes de realizar cambios importantes, se recomienda abrir un issue para discutir la propuesta.
+The visual dashboard can continue evolving independently from the core automation.
 
----
+## License
 
-## Estado del proyecto
+This project is licensed under the **MIT License**.
 
-**Estado:** funcional / en desarrollo continuo.
+The MIT License allows anyone to use, copy, modify, merge, publish, distribute, sublicense and sell copies of the software, provided that the copyright notice and license are included.
 
-La versión actual contiene las automatizaciones principales para:
-
-* Empresas.
-* Postulaciones.
-* Historial.
-* Estados.
-* Indicadores.
-* Conversiones.
-
-La interfaz visual y el dashboard pueden evolucionar independientemente de la lógica de automatización.
-
----
-
-## Licencia
-
-Este proyecto está disponible bajo la licencia **MIT**.
-
-La licencia permite utilizar, copiar, modificar, distribuir, sublicenciar y vender el software, siempre que se conserve el aviso de copyright y la licencia correspondiente.
+See [`LICENSE`](LICENSE) for the complete license text.
 
 Copyright (c) 2026 Cristóbal Matías Latorre Padilla
 
-Consulta el archivo [`LICENSE`](LICENSE) para conocer los términos completos de la licencia.
-
----
-
-## Autor
+## Author
 
 **Cristóbal Matías Latorre Padilla**
 
-Proyecto creado como una herramienta personal de gestión de búsqueda laboral y posteriormente preparado como plantilla reutilizable y open source.
+Career Tracker was originally created as a personal job-search management tool and later developed into a reusable open-source template.
