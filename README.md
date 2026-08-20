@@ -3,7 +3,7 @@
 <p align="center">
   <em>Open-source Google Sheets template for managing and analyzing your job search.</em>
 </p>
-
+<p align="center"><a href="README.md">English</a> · <a href="README.es.md">Español</a></p>
 <p align="center">
   <img src="https://img.shields.io/badge/Google%20Sheets-Apps%20Script-4285F4?style=flat-square" alt="Google Sheets Apps Script">
   <img src="https://img.shields.io/badge/status-functional-green?style=flat-square" alt="Functional">
@@ -18,6 +18,11 @@
 It helps you keep track of companies, job applications, application stages, historical events and search metrics in one place.
 
 The project was originally created as a personal tool for managing a job search and was later structured as a reusable template that can be shared, copied and modified freely.
+
+Do you want to use Career Tracker in Google Sheets?
+
+**[Create a copy from the Template](https://docs.google.com/spreadsheets/d/1tYiN0VNhKKJHav6gcv_3Fu9Wp7t_yCFkGQ09BQP-h34/copy)**
+
 
 ## Table of Contents
 
